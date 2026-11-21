@@ -167,8 +167,8 @@
   function render(targetCtx = ctx, targetWidth = canvas.width, targetHeight = canvas.height) {
     targetCtx.clearRect(0, 0, targetWidth, targetHeight);
 
-    // Canvas base background
-    targetCtx.fillStyle = '#181a1f';
+    // Canvas base background (Clean pure white for Light Mode)
+    targetCtx.fillStyle = '#ffffff';
     targetCtx.fillRect(0, 0, targetWidth, targetHeight);
 
     // 1. Draw Visitor's Photo (Behind the Frame)
@@ -205,9 +205,9 @@
 
       targetCtx.restore();
     } else {
-      // Dark neutral placeholder before photo is added
+      // Pure white placeholder before photo is added
       targetCtx.save();
-      targetCtx.fillStyle = '#181a1f';
+      targetCtx.fillStyle = '#ffffff';
       targetCtx.fillRect(0, 0, targetWidth, targetHeight);
       targetCtx.restore();
     }
