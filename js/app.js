@@ -411,7 +411,13 @@
     return exportCanvas;
   }
 
-  // Handle High-Res Download
+  // Detect iOS (Safari on iPhone/iPad)
+  function isIOS() {
+    return /iP(hone|ad|od)/i.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  // Handle High-Res Download — with full iOS Safari support
   function handleDownload() {
     if (!userImage) {
       showToast('សូមជ្រើសរើសរូបថតរបស់អ្នកជាមុនសិន!', 'error');
@@ -422,6 +428,58 @@
 
     setTimeout(() => {
       const exportCanvas = generateExportCanvas();
+
+      // iOS Safari: use Web Share API if available (shows native share sheet → Save Image)
+      if (isIOS()) {
+        exportCanvas.toBlob(async (blob) => {
+          if (!blob) {
+            showToast('បរាជ័យក្នុងការបង្កើតរូបភាព', 'error');
+            return;
+          }
+
+          const file = new File([blob], 'samros-charnai-profile.png', { type: 'image/png' });
+
+          // Try Web Share API with file (iOS 15+)
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                title: 'ទឹកក្រអូប សម្រស់ចរណៃថ្មី',
+                text: 'ស៊ុម Profile ផ្លូវការ',
+                files: [file]
+              });
+              showToast('ចែករំលែករួចរាល់! ជ្រើសរើស "រក្សាទុករូបភាព" ដើម្បីទាញយក', 'success');
+              return;
+            } catch (err) {
+              if (err.name === 'AbortError') return; // user cancelled
+              // Fall through to blob URL method
+            }
+          }
+
+          // iOS fallback: open blob as data URL in new tab → user long-presses → Save Image
+          const reader = new FileReader();
+          reader.onload = () => {
+            const dataUrl = reader.result;
+            const win = window.open('', '_blank');
+            if (win) {
+              win.document.write(
+                '<html><head><title>រូបភាព Profile</title><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
+                '<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;">' +
+                '<img src="' + dataUrl + '" style="max-width:100%;max-height:100vh;display:block;" />' +
+                '</body></html>'
+              );
+              win.document.close();
+              showToast('ចុចយូរលើរូបភាព រួចជ្រើស "រក្សាទុករូបភាព" ដើម្បីទាញយក 📱', 'success');
+            } else {
+              showToast('សូម Allow Popups ក្នុង Safari ដើម្បីបន្ត', 'error');
+            }
+          };
+          reader.readAsDataURL(blob);
+        }, 'image/png', 1.0);
+
+        return;
+      }
+
+      // Desktop / Android: standard anchor download
       exportCanvas.toBlob((blob) => {
         if (!blob) {
           showToast('បរាជ័យក្នុងការទាញយករូបភាព', 'error');
@@ -431,15 +489,15 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'ទឹកក្រអូប-សម្រស់ចរណៃថ្មី-profile.png';
+        a.download = 'samros-charnai-profile.png';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
 
         showToast('បានទាញយករូបភាពដោយជោគជ័យ! រួចរាល់សម្រាប់ដាក់លើ Facebook Profile', 'success');
       }, 'image/png', 1.0);
-    }, 50);
+    }, 80);
   }
 
   // Handle Native Web Share API
