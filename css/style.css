@@ -1,0 +1,107 @@
+/* Twibbonize Theme Custom Styles */
+
+/* Google Fonts imports handled in HTML, font fallback here */
+body {
+  background-color: #121316;
+  color: #ffffff;
+  font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom Twibbonize Colors */
+:root {
+  --tw-bg-dark: #121316;
+  --tw-card-dark: #1e2025;
+  --tw-card-border: #2c2f36;
+  --tw-teal: #00ba88;
+  --tw-teal-hover: #00a377;
+  --tw-teal-light: rgba(0, 186, 136, 0.15);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #121316;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2c2f36;
+  border-radius: 9999px;
+}
+
+/* Canvas Stage */
+#canvasWrapper {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#photoCanvas {
+  touch-action: none;
+  display: block;
+}
+
+/* Sliders */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #2a2d34;
+  border-radius: 9999px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #00ba88;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 10px rgba(0, 186, 136, 0.5);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  background: #00a377;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #00ba88;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 10px rgba(0, 186, 136, 0.5);
+}
+
+/* Toast */
+#toastNotification.show {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Promo floating badge rotation */
+.promo-badge {
+  transform: rotate(-8deg);
+  animation: gentleBob 3s ease-in-out infinite alternate;
+}
+
+@keyframes gentleBob {
+  0% {
+    transform: rotate(-8deg) translateY(0px);
+  }
+
+  100% {
+    transform: rotate(-5deg) translateY(-3px);
+  }
+}

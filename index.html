@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="km">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ទឹកក្រអូប សម្រស់ចរណៃថ្មី - Twibbonize</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome 6 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts: Kantumruy Pro (Khmer) & Plus Jakarta Sans (English) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            twibbon: {
+              teal: '#00ba88',
+              tealHover: '#00a377',
+              bgDark: '#121316',
+              cardDark: '#1e2025',
+              cardBorder: '#2c2f36'
+            }
+          },
+          fontFamily: {
+            sans: ['"Kantumruy Pro"', '"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body
+  class="bg-[#121316] text-white min-h-screen flex flex-col font-sans antialiased selection:bg-[#00ba88] selection:text-white">
+
+  <!-- MAIN MOBILE TWIBBONIZE CONTAINER -->
+  <main class="flex-1 max-w-md w-full mx-auto px-4 pt-6 pb-12 flex flex-col gap-4">
+
+    <!-- CAMPAIGN TITLE & CREATOR HEADER -->
+    <div class="text-center relative pb-1">
+      <!-- Campaign Title in Khmer -->
+      <h1 class="text-xl sm:text-2xl font-bold text-white tracking-normal font-sans leading-snug">
+        ទឹកក្រអូប សម្រស់ចរណៃថ្មី
+      </h1>
+
+      <!-- Creator Name -->
+      <div class="flex items-center justify-center gap-1.5 text-xs text-slate-300 mt-1.5 font-medium">
+        <i class="fa-solid fa-circle-user text-slate-400 text-sm"></i>
+        <span>Zai Yang</span>
+      </div>
+
+      <!-- Supporters count badge -->
+      <div class="flex items-center justify-center gap-1.5 text-xs text-slate-400 mt-1">
+        <i class="fa-solid fa-user-group text-[11px]"></i>
+        <span>អ្នកគាំទ្រ ២ នាក់</span>
+      </div>
+    </div>
+
+    <!-- THE FRAME STAGE CARD (TWIBBONIZE CANVAS) -->
+    <div
+      class="relative w-full aspect-square rounded-3xl overflow-hidden bg-[#181a1f] border border-[#2c2f36] shadow-2xl flex items-center justify-center group touch-none"
+      id="canvasWrapper">
+      <!-- Interactive Canvas -->
+      <canvas id="photoCanvas" class="w-full h-full object-contain cursor-grab active:cursor-grabbing"></canvas>
+
+      <!-- Circular Facebook Avatar Outline Preview -->
+      <div id="fbCircleMask" class="pointer-events-none absolute inset-0 z-20 hidden">
+        <svg viewBox="0 0 100 100" class="w-full h-full fill-black/75">
+          <path fill-rule="evenodd" d="M0 0 H100 V100 H0 Z M50 10 A40 40 0 1 0 50 90 A40 40 0 1 0 50 10 Z"></path>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#00ba88" stroke-width="1" stroke-dasharray="2 2"></circle>
+        </svg>
+        <div
+          class="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold bg-black/85 backdrop-blur-md text-[#00ba88] px-3 py-1 rounded-full border border-[#00ba88]/40 shadow-lg flex items-center gap-1.5 whitespace-nowrap">
+          <i class="fa-brands fa-facebook"></i> រង្វង់ Profile Facebook
+        </div>
+      </div>
+
+      <!-- Initial Prompt Overlay (Hidden once photo is loaded) -->
+      <div id="initialUploadOverlay"
+        class="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center bg-black/40 backdrop-blur-[1px] transition-opacity cursor-pointer">
+        <div
+          class="w-14 h-14 rounded-2xl bg-[#00ba88]/20 border border-[#00ba88]/40 text-[#00ba88] flex items-center justify-center text-2xl shadow-lg mb-3">
+          <i class="fa-solid fa-camera"></i>
+        </div>
+        <p class="text-sm font-bold text-white mb-1">បញ្ចូលរូបថតរបស់អ្នក</p>
+        <p class="text-xs text-slate-300 max-w-[240px]">ចុចប៊ូតុង "ជ្រើសរើសរូបថត" ខាងក្រោមដើម្បីដាក់រូបក្នុងស៊ុម</p>
+      </div>
+
+      <!-- Gesture Floating Hint -->
+      <div id="gestureHint"
+        class="absolute top-3 left-3 z-25 bg-black/75 backdrop-blur-md text-[10px] text-slate-200 px-2.5 py-1 rounded-lg border border-white/10 pointer-events-none transition-opacity duration-300 opacity-0 flex items-center gap-1.5">
+        <i class="fa-solid fa-hand-pointer text-[#00ba88]"></i> អូសដើម្បីផ្លាស់ទី • ចុចពីរម្រាមដើម្បីពង្រីក/បង្រួម
+      </div>
+    </div>
+
+    <!-- PHOTO ADJUSTMENT CONTROLS (Appears after photo is loaded) -->
+    <div id="photoControlsCard" class="hidden bg-[#1e2025] p-3.5 rounded-2xl border border-[#2c2f36] space-y-3">
+      <!-- Quick Toolbar: Rotate, Flip, Center & FB Circle -->
+      <div class="flex items-center justify-between gap-1.5 flex-wrap">
+        <div class="flex items-center gap-1.5">
+          <button id="rotateLeftBtn"
+            class="w-8 h-8 rounded-lg bg-[#2c2f36] hover:bg-slate-700 text-slate-200 flex items-center justify-center text-xs transition-colors"
+            title="បង្វិលឆ្វេង">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+          <button id="rotateRightBtn"
+            class="w-8 h-8 rounded-lg bg-[#2c2f36] hover:bg-slate-700 text-slate-200 flex items-center justify-center text-xs transition-colors"
+            title="បង្វិលស្តាំ">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+          <button id="flipHorizontalBtn"
+            class="w-8 h-8 rounded-lg bg-[#2c2f36] hover:bg-slate-700 text-slate-200 flex items-center justify-center text-xs transition-colors"
+            title="ត្រឡប់រូប">
+            <i class="fa-solid fa-arrows-left-right"></i>
+          </button>
+          <button id="resetTransformBtn"
+            class="px-2.5 h-8 rounded-lg bg-[#2c2f36] hover:bg-slate-700 text-slate-200 flex items-center justify-center text-xs transition-colors gap-1"
+            title="កណ្តាល">
+            <i class="fa-solid fa-compress"></i> <span>កណ្តាល</span>
+          </button>
+        </div>
+
+        <!-- FB Circle Toggle -->
+        <button id="fbCircleToggleBtn"
+          class="px-2.5 h-8 rounded-lg bg-[#2c2f36] hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs transition-colors gap-1">
+          <i class="fa-regular fa-circle text-[#00ba88]"></i> <span>រង្វង់ FB</span>
+        </button>
+      </div>
+
+      <!-- Zoom Slider -->
+      <div class="flex items-center gap-3 pt-1">
+        <span class="text-xs font-medium text-slate-400 flex items-center gap-1 w-24">
+          <i class="fa-solid fa-magnifying-glass text-[#00ba88] text-[10px]"></i> ពង្រីក/បង្រួម
+        </span>
+        <input type="range" id="zoomRange" min="0.2" max="3" step="0.01" value="1"
+          class="flex-1 accent-[#00ba88] h-1.5 bg-[#2c2f36] rounded-lg cursor-pointer">
+        <span id="zoomVal" class="text-xs font-mono text-slate-300 w-10 text-right">1.0x</span>
+      </div>
+    </div>
+
+    <!-- PRIMARY ACTION BUTTONS (TWIBBONIZE TEAL BUTTON) -->
+    <div class="space-y-2.5">
+      <!-- Hidden File Picker -->
+      <input type="file" id="photoFileInput" accept="image/*" class="hidden">
+
+      <!-- Step 1 Button: "Choose Your Photo" -->
+      <button id="choosePhotoBtn"
+        class="w-full py-3.5 px-6 rounded-2xl bg-[#00ba88] hover:bg-[#00a377] text-white font-bold text-base shadow-lg shadow-[#00ba88]/25 flex items-center justify-center gap-2.5 transition-all active:scale-[0.99]">
+        <i class="fa-solid fa-camera text-lg"></i>
+        <span>ជ្រើសរើសរូបថតរបស់អ្នក</span>
+      </button>
+
+      <!-- Step 2 Buttons: (Shown after photo is selected) -->
+      <div id="postUploadActionButtons" class="hidden space-y-2">
+        <button id="downloadPhotoBtn"
+          class="w-full py-3.5 px-6 rounded-2xl bg-[#00ba88] hover:bg-[#00a377] text-white font-bold text-base shadow-lg shadow-[#00ba88]/30 flex items-center justify-center gap-2.5 transition-all active:scale-[0.99]">
+          <i class="fa-solid fa-download text-lg"></i>
+          <span>ទាញយករូបភាព (កម្រិតច្បាស់ HD)</span>
+        </button>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button id="changePhotoBtn"
+            class="py-2.5 px-4 rounded-xl bg-[#1e2025] hover:bg-slate-800 text-slate-200 border border-[#2c2f36] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+            <i class="fa-solid fa-arrow-rotate-right text-[#00ba88]"></i>
+            <span>ប្តូររូបថត</span>
+          </button>
+          <button id="nativeShareBtn"
+            class="py-2.5 px-4 rounded-xl bg-[#1e2025] hover:bg-slate-800 text-slate-200 border border-[#2c2f36] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+            <i class="fa-solid fa-share-nodes text-[#00ba88]"></i>
+            <span>ចែករំលែក</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick sample photo link for immediate testing -->
+      <div class="text-center">
+        <button id="tryDemoPhotoBtn"
+          class="text-[11px] text-slate-400 hover:text-[#00ba88] transition-colors underline decoration-slate-600">
+          សាកល្បងជាមួយរូបថតគំរូ
+        </button>
+      </div>
+    </div>
+
+    <!-- HOW TO USE HINT IN KHMER -->
+    <div class="p-3.5 bg-[#1e2025]/60 border border-[#2c2f36] rounded-xl text-xs text-slate-400">
+      <p class="font-semibold text-slate-300 mb-1 flex items-center gap-1.5 text-xs">
+        <i class="fa-brands fa-facebook text-blue-400"></i> របៀបដាក់ជារូប Profile លើ Facebook៖
+      </p>
+      <ol class="list-decimal list-inside space-y-1 text-[11px] text-slate-400">
+        <li>ចុចលើប៊ូតុង <strong>"ជ្រើសរើសរូបថតរបស់អ្នក"</strong> ហើយសារ៉េរូបឱ្យត្រូវកណ្តាល</li>
+        <li>ចុចប៊ូតុង <strong>"ទាញយករូបភាព (កម្រិតច្បាស់ HD)"</strong></li>
+        <li>បើកកម្មវិធី Facebook ចុចលើរូប Profile របស់អ្នក ហើយជ្រើសរើសរូបដែលបានទាញយក!</li>
+      </ol>
+    </div>
+
+    <!-- SOCIAL MEDIA & COMMUNITY SECTION (2 Telegram Groups + 1 Facebook Page) -->
+    <div class="bg-[#1e2025] border border-[#2c2f36] rounded-2xl p-4 space-y-3 shadow-lg">
+      <div class="flex items-center gap-2 text-sm font-bold text-slate-200">
+        <i class="fa-solid fa-comments text-[#00ba88]"></i>
+        <span>ទំនាក់ទំនង និងចូលរួមសហគមន៍</span>
+      </div>
+      <p class="text-[11px] text-slate-400 -mt-1">
+        ចូលរួមជាមួយពួកយើងដើម្បីទទួលបានព័ត៌មានថ្មីៗ និងការប្រូម៉ូសិនពិសេសៗ!
+      </p>
+
+      <div class="space-y-2 pt-1">
+        <!-- 1. Facebook Page: សម្រស់ចរណៃ បោះដុំសាប៊ូកូនខ្មែរ -->
+        <a href="https://web.facebook.com/pdmlove001" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 rounded-xl bg-[#121316] hover:bg-[#181a1f] border border-[#2c2f36] hover:border-[#1877F2]/50 transition-all group">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-full bg-[#1877F2]/20 text-[#1877F2] border border-[#1877F2]/40 flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
+              <i class="fa-brands fa-facebook-f"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white group-hover:text-[#1877F2] transition-colors truncate">សម្រស់ចរណៃ បោះដុំសាប៊ូកូនខ្មែរ</div>
+              <div class="text-[10px] text-slate-400">ទំព័រ Facebook ផ្លូវការ</div>
+            </div>
+          </div>
+          <span class="text-[11px] font-semibold text-[#1877F2] bg-[#1877F2]/10 px-2.5 py-1 rounded-lg border border-[#1877F2]/25 flex items-center gap-1 flex-shrink-0 ml-2">
+            <span>តាមដាន</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+          </span>
+        </a>
+
+        <!-- 2. Telegram Group: តំណាង PDMCARE -->
+        <a href="https://t.me/+_byz0rsckks3MDE1" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 rounded-xl bg-[#121316] hover:bg-[#181a1f] border border-[#2c2f36] hover:border-[#229ED9]/50 transition-all group">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-full bg-[#229ED9]/20 text-[#229ED9] border border-[#229ED9]/40 flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
+              <i class="fa-brands fa-telegram"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white group-hover:text-[#229ED9] transition-colors truncate">តំណាង PDMCARE</div>
+              <div class="text-[10px] text-slate-400">ក្រុម Telegram ផ្លូវការ</div>
+            </div>
+          </div>
+          <span class="text-[11px] font-semibold text-[#229ED9] bg-[#229ED9]/10 px-2.5 py-1 rounded-lg border border-[#229ED9]/25 flex items-center gap-1 flex-shrink-0 ml-2">
+            <span>ចូលរួម</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+          </span>
+        </a>
+
+        <!-- 3. Telegram Group/Channel: សិប្បកម្មផលិតសាប៊ូ សម្រស់ចរណៃ -->
+        <a href="https://t.me/pdmloveofficial" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 rounded-xl bg-[#121316] hover:bg-[#181a1f] border border-[#2c2f36] hover:border-[#229ED9]/50 transition-all group">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-full bg-[#229ED9]/20 text-[#229ED9] border border-[#229ED9]/40 flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
+              <i class="fa-brands fa-telegram"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white group-hover:text-[#229ED9] transition-colors truncate">សិប្បកម្មផលិតសាប៊ូ សម្រស់ចរណៃ</div>
+              <div class="text-[10px] text-slate-400">ឆានែល Telegram ផ្លូវការ</div>
+            </div>
+          </div>
+          <span class="text-[11px] font-semibold text-[#229ED9] bg-[#229ED9]/10 px-2.5 py-1 rounded-lg border border-[#229ED9]/25 flex items-center gap-1 flex-shrink-0 ml-2">
+            <span>ចូលរួម</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+          </span>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification"
+    class="fixed bottom-6 inset-x-4 max-w-sm mx-auto z-50 bg-[#1e2025] border border-[#2c2f36] text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div id="toastIcon"
+      class="w-7 h-7 rounded-full bg-[#00ba88]/20 text-[#00ba88] flex items-center justify-center text-sm flex-shrink-0">
+      <i class="fa-solid fa-check"></i>
+    </div>
+    <div id="toastMessage" class="text-xs font-medium leading-snug">ការជូនដំណឹង</div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-[#2c2f36]/70 bg-[#121316] py-5 text-center text-[11px] text-slate-500">
+    <div class="max-w-md mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span>© ២០២៦ ទឹកក្រអូប សម្រស់ចរណៃថ្មី • រក្សាសិទ្ធិគ្រប់យ៉ាង</span>
+      <span class="flex items-center gap-1 text-[#00ba88]">
+        <i class="fa-solid fa-shield-halved"></i> សុវត្ថិភាពឯកជនភាព ១០០%
+      </span>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+</body>
+
+</html>
