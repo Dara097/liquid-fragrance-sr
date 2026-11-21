@@ -62,18 +62,3 @@ npx serve .
 ```
 
 ---
-
-## 📁 Project Structure
-
-```
-├── index.html              # Main HTML structure with Tailwind CSS & FontAwesome
-├── assets/
-│   ├── frame.png           # Your official default 2000×2000 campaign frame PNG
-│   └── sample-frame.png    # Backup frame asset
-├── css/
-│   └── style.css           # Custom styles, range slider styling & animations
-├── js/
-│   ├── app.js              # Canvas engine, touch gesture tracking & export logic
-│   └── frames.js           # Vector fallback templates & SVG utilities
-└── README.md               # Documentation
-```
